@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoSearch</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #11111b;
+      color: #cdd6f4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #cba6f7;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      color: #6c7086;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    /* ── Search Box ── */
+    .search-container {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    #query-input {
+      flex: 1;
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      color: #cdd6f4;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #query-input:focus {
+      border-color: #cba6f7;
+    }
+
+    #query-input::placeholder { color: #45475a; }
+
+    #search-btn {
+      background: #cba6f7;
+      color: #11111b;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #search-btn:hover { background: #b4befe; }
+    #search-btn:disabled { background: #45475a; cursor: not-allowed; }
+
+    .examples {
+      color: #45475a;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    .examples span {
+      color: #6c7086;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .examples span:hover { color: #cba6f7; }
+
+    /* ── Loading ── */
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 40px 0;
+      color: #6c7086;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #313244;
+      border-top-color: #cba6f7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result Card ── */
+    .result-section {
+      width: 100%;
+      max-width: 680px;
+      display: none;
+    }
+
+    .result-card {
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .algo-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #cba6f7;
+      margin-bottom: 8px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      font-family: monospace;
+      font-size: 0.82rem;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .badge-complexity {
+      background: #1e1e2e;
+      border: 1px solid #a6e3a1;
+      color: #a6e3a1;
+    }
+
+    .badge-score {
+      background: #1e1e2e;
+      border: 1px solid #45475a;
+      color: #6c7086;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #6c7086;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 18px;
+      margin-bottom: 5px;
+    }
+
+    .section-text {
+      color: #cdd6f4;
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+    .source-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #89b4fa;
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    /* ── Also Consider ── */
+    .also-label {
+      font-size: 0.85rem;
+      color: #6c7086;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .also-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .also-card {
+      background: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .also-name {
+      font-weight: 600;
+      color: #cba6f7;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .also-complexity {
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #a6e3a1;
+    }
+
+    /* ── Error ── */
+    .error-box {
+      display: none;
+      background: #1e1e2e;
+      border: 1px solid #f38ba8;
+      color: #f38ba8;
+      border-radius: 10px;
+      padding: 16px 20px;
+      width: 100%;
+      max-width: 680px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🔍 AlgoSearch</h1>
+    <p>Describe your problem in plain English — get the right algorithm.</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-container">
+    <div class="search-row">
+      <input
+        id="query-input"
+        type="text"
+        placeholder="e.g. find shortest path in a weighted graph"
+        autocomplete="off"
+      />
+      <button id="search-btn" onclick="search()">Search</button>
+    </div>
+    <div class="examples">
+      Try:
+      <span onclick="fillExample('shortest path between two cities')">shortest path between two cities</span> ·
+      <span onclick="fillExample('sort a large list efficiently')">sort a large list</span> ·
+      <span onclick="fillExample('find pattern in a string')">find pattern in string</span> ·
+      <span onclick="fillExample('range sum queries on array')">range sum queries</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div>Searching algorithms...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- Results -->
+  <div class="result-section" id="result-section">
+
+    <!-- Main result card -->
+    <div class="result-card">
+      <div class="algo-name" id="r-name"></div>
+      <div class="badges">
+        <span class="badge badge-complexity" id="r-complexity"></span>
+        <span class="badge badge-score" id="r-score"></span>
+      </div>
+
+      <div class="section-label">How it works</div>
+      <div class="section-text" id="r-explanation"></div>
+
+      <div class="section-label">Time Complexity</div>
+      <div class="section-text" id="r-time"></div>
+
+      <div class="section-label">Space Complexity</div>
+      <div class="section-text" id="r-space"></div>
+
+      <div class="section-label">When to use</div>
+      <div class="section-text" id="r-when"></div>
+
+      <div class="section-label">Alternatives</div>
+      <div class="section-text" id="r-alternatives"></div>
+
+      <a id="r-link" class="source-link" href="#" target="_blank">Read full article →</a>
+    </div>
+
+    <!-- Also consider -->
+    <div id="also-section">
+      <div class="also-label">Also Consider</div>
+      <div class="also-grid" id="also-grid"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:8000";
+
+    // Fill example query on click
+    function fillExample(text) {
+      document.getElementById("query-input").value = text;
+      search();
+    }
+
+    // Allow Enter key to search
+    document.getElementById("query-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") search();
+    });
+
+    async function search() {
+      const query = document.getElementById("query-input").value.trim();
+      if (!query) return;
+
+      // Show loading, hide previous results
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("result-section").style.display = "none";
+      document.getElementById("error-box").style.display = "none";
+      document.getElementById("search-btn").disabled = true;
+
+      try {
+        const res = await fetch(`${API_URL}/search`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, top_n: 3 }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Search failed");
+        }
+
+        const data = await res.json();
+        renderResult(data);
+
+      } catch (err) {
+        document.getElementById("error-box").textContent = "Error: " + err.message;
+        document.getElementById("error-box").style.display = "block";
+      } finally {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("search-btn").disabled = false;
+      }
+    }
+
+    function renderResult(data) {
+      const exp = data.explanation;
+      const top = data.top_result;
+
+      // Fill main card
+      document.getElementById("r-name").textContent = exp.algorithm || top.name;
+      document.getElementById("r-complexity").textContent = "⏱ " + top.complexity;
+      document.getElementById("r-score").textContent = "score: " + top.score;
+      document.getElementById("r-explanation").textContent = exp.explanation;
+      document.getElementById("r-time").textContent = exp.time_complexity;
+      document.getElementById("r-space").textContent = exp.space_complexity;
+      document.getElementById("r-when").textContent = exp.when_to_use;
+      document.getElementById("r-alternatives").textContent = exp.alternatives;
+      document.getElementById("r-link").href = top.url || "#";
+
+      // Fill "also consider"
+      const grid = document.getElementById("also-grid");
+      grid.innerHTML = "";
+      const alsoSection = document.getElementById("also-section");
+
+      if (data.other_results && data.other_results.length > 0) {
+        alsoSection.style.display = "block";
+        data.other_results.forEach(r => {
+          grid.innerHTML += `
+            <div class="also-card">
+              <div class="also-name">${r.name}</div>
+              <div class="also-complexity">${r.complexity}</div>
+            </div>`;
+        });
+      } else {
+        alsoSection.style.display = "none";
+      }
+
+      document.getElementById("result-section").style.display = "block";
+    }
+  </script>
+
+</body>
+</html>

@@ -191,4 +191,4 @@ Pure vector search misses exact keyword intent. If you type "Dijkstra", vector s
 Free tier with high rate limits. Same RAG pipeline, different provider. Easy to swap if needed.
 
 **Why 40/60 keyword/vector split?**
-Semantic meaning matters more than exact word overlap for algorithm retrieval. But keyword matches deserve weight too — if someone types "heap", heap-based algorithms should rank higher regardless of semantic distance.
+Semantic meaning matters more than exact word overlap for algorithm retrieval. But keyword matches deserve weight too. if someone types "heap", heap-based algorithms should rank higher regardless of semantic distance.
